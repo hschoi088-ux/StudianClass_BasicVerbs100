@@ -9,7 +9,7 @@
         body {
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
             -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
-            word-break: keep-all; background-color: #f8fafc;
+            word-break: keep-all; background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif;
         }
         .card { perspective: 1000px; }
         .card-inner {
@@ -36,7 +36,7 @@
             <h1 class="text-2xl font-black text-indigo-600 tracking-tight italic">기본동사100 스피드퀴즈</h1>
         </header>
 
-        <div class="flex space-x-2 mb-6 overflow-x-auto pb-2 no-scrollbar font-bold">
+        <div class="flex space-x-2 mb-6 overflow-x-auto pb-2 no-scrollbar font-bold text-sm">
             <button onclick="selectWeek(1)" id="tab-1" class="week-tab flex-shrink-0 px-5 py-2 bg-white rounded-full shadow-sm border border-slate-100 active-tab">Week 1</button>
             <button class="flex-shrink-0 px-5 py-2 bg-slate-100 text-slate-300 rounded-full shadow-sm border border-slate-100 cursor-not-allowed">Week 2+</button>
         </div>
@@ -47,13 +47,17 @@
                 <button onclick="startQuiz('mild')" class="w-full py-5 bg-emerald-500 text-white rounded-2xl font-black shadow-lg shadow-emerald-100 active:scale-95 transition">순한맛 시작</button>
                 <button onclick="startQuiz('spicy')" class="w-full py-5 bg-orange-500 text-white rounded-2xl font-black shadow-lg shadow-orange-100 active:scale-95 transition">매운맛 시작</button>
             </div>
-            <p class="mt-6 text-[10px] text-slate-400 font-medium">※ 모바일은 진동 모드를 해제해야 소리가 들립니다.</p>
+            <div class="mt-8 p-4 bg-slate-50 rounded-xl text-[11px] text-slate-400 text-left leading-relaxed">
+                <p>• <strong>순한맛</strong>: 대표예제 + Model examples</p>
+                <p>• <strong>매운맛</strong>: 모든 출처 랜덤 10문항</p>
+                <p class="mt-2 text-rose-400 font-bold">※ 모바일 Tip: 옆면 무음 스위치를 해제하세요!</p>
+            </div>
         </div>
 
         <div id="quiz-screen" class="hidden">
             <div class="flex justify-between items-center mb-6 px-2">
                 <span id="progress-text" class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-bold">1 / 10</span>
-                <button onclick="location.reload()" class="text-slate-400 font-bold text-xs uppercase tracking-tighter">Exit ✕</button>
+                <button onclick="location.reload()" class="text-slate-400 font-bold text-xs uppercase">Exit ✕</button>
             </div>
 
             <div id="card-container" class="card" onclick="flipCard()">
@@ -61,7 +65,7 @@
                     <div class="card-front bg-white border border-slate-100">
                         <span class="text-indigo-400 font-black text-[10px] tracking-widest mb-6 uppercase">Korean</span>
                         <p id="q-korean" class="text-xl font-bold leading-snug px-4 text-center"></p>
-                        <p class="mt-10 text-slate-300 text-xs font-bold animate-pulse">카드를 터치하세요</p>
+                        <p class="mt-10 text-slate-300 text-xs font-bold animate-pulse">카드를 터치하여 정답 확인</p>
                     </div>
                     <div class="card-back bg-indigo-600 text-white">
                         <button id="star-btn" onclick="toggleStar(event)" class="absolute top-6 right-6 text-white/40 transition-all">
@@ -80,13 +84,13 @@
                     </div>
                 </div>
             </div>
-            <button id="next-btn" onclick="nextQuestion()" class="w-full mt-10 py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-100 hidden active:scale-95 transition">다음 문제로 NEXT</button>
+            <button id="next-btn" onclick="nextQuestion()" class="w-full mt-10 py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl hidden active:scale-95 transition">다음 문제로 NEXT</button>
         </div>
 
         <div id="result-screen" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
-            <h2 class="text-center font-black text-xl text-slate-800 mb-8">퀴즈 완료 리포트</h2>
-            <div id="starred-list" class="space-y-4 max-h-96 overflow-y-auto pr-2"></div>
-            <button onclick="location.reload()" class="w-full mt-10 py-5 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition">다시 시작하기</button>
+            <h2 class="text-center font-black text-xl text-slate-800 mb-8 tracking-tighter">퀴즈 완료 리포트</h2>
+            <div id="starred-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scroll"></div>
+            <button onclick="location.reload()" class="w-full mt-10 py-5 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition">메인으로 돌아가기</button>
         </div>
     </div>
 
@@ -102,7 +106,7 @@
             {w:1, d:1, s:"교재2", k:"프로젝트가 끝나서 좋죠?", e:"Are you glad the project is over?"},
             {w:1, d:1, s:"교재2", k:"솔직히 시원섭섭해요. 일을 끝내서 홀가분하긴 한데, 팀이 그리울 것 같아요.", e:"Honestly, I have mixed feelings. I’m relieved we finished the work, but I’ll miss the team."},
             {w:1, d:1, s:"교재2", k:"음대 대신 의대를 선택한 거 맞지?", e:"You chose med school over music, right?"},
-            {id:10, w:1, d:1, s:"교재2", k:"응, 힘든 결정이었어.", e:"Yeah, it was a tough decision."},
+            {w:1, d:1, s:"교재2", k:"응, 힘든 결정이었어.", e:"Yeah, it was a tough decision."},
             {w:1, d:1, s:"교재2", k:"음악을 계속하지 않은 걸 후회해?", e:"Do you have any regrets about not pursuing music?"},
             {w:1, d:1, s:"교재2", k:"조금은 그렇지만, 되도록 생각 안 하려고 해", e:"A few, but I try not to think about it too much."},
             {w:1, d:1, s:"교재3", k:"그녀는 공포 영화보다는 영어 강의를 택할 겁니다.", e:"She would choose an English lecture over any horror movie."},
@@ -123,7 +127,7 @@
             {w:1, d:2, s:"교재2", k:"좋지요! 한국 음식이라면 좋아요.", e:"Sure! I could go for some Korean food."},
             {w:1, d:2, s:"교재3", k:"어제 공원에서 널 봤어.", e:"I saw you at the park yesterday."},
             {w:1, d:2, s:"교재3", k:"어제 공원에서 널 지켜봤어.", e:"I watched you at the park yesterday."},
-            {w:1, d:2, s:"교재3", k:"술래잡기 경기를 봤지만 집중해서 보지는 않았어.", e:"I saw the game on the TV at the bar, but I didn’t watch it."},
+            {w:1, d:2, s:"교재3", k:"술집에 있는 TV에서 경기가 나오던데, 집중해서 보지는 않았어.", e:"I saw the game on the TV at the bar, but I didn’t watch it."},
             {w:1, d:2, s:"교재3", k:"그 영화를 대형 화면으로 봤어.", e:"I saw the movie on the big screen."},
             {w:1, d:2, s:"교재3", k:"어젯밤에 넷플릭스 다큐멘터리를 보고 있는데 엄마한테 전화가 왔다.", e:"My mom called while I was watching a Netflix documentary last night."},
             {w:1, d:3, s:"대표", k:"어제 아침에는 별일이 다 있었어요.", e:"I had a weird morning yesterday."},
@@ -171,7 +175,7 @@
             {w:1, d:5, s:"교재2", k:"네, 늦어서 죄송해요. 뭐 좀 처리할 게 있었어요.", e:"Yes, sorry I’m late. I had something to take care of."},
             {w:1, d:5, s:"교재2", k:"오늘 바빠? 점심 먹자.", e:"Are you busy today? Let’s have lunch."},
             {w:1, d:5, s:"교재2", k:"안 돼. 우체국 가는 길이야.", e:"I can’t. I’m on my way to the post office."},
-            {w:1, d:5, s:"교재2", k:"중고나라에서 바지를 팔아서, 택배 부칠 게 많아.", e:"I just sold five pairs of pants, so I have a lot of packages to ship."},
+            {w:1, d:5, s:"교재2", k:"중고나라에서 바지 다섯 개를 팔아서, 택배 부칠 게 많아.", e:"I just sold five pairs of pants, so I have a lot of packages to ship."},
             {w:1, d:5, s:"교재3", k:"이번 주말에 친구 고양이를 돌봐 주기로 했어.", e:"I’m taking care of my friend’s cat this weekend."},
             {w:1, d:5, s:"교재3", k:"저희 아빠는 건강을 좀 더 신경 쓰셔야 해요.", e:"My dad needs to take better care of his health."},
             {w:1, d:5, s:"교재3", k:"휴가 가기 전에 처리해야 할 일이 좀 있어.", e:"I have some work to take care of before I start my vacation."},
@@ -179,7 +183,7 @@
             {w:1, d:5, s:"교재3", k:"회사에서 모든 경비를 다 대 줬어요.", e:"The company took care of everything."}
         ];
 
-        // 고유 ID 자동 부여
+        // 고유 ID 부여
         allData.forEach((item, index) => item.id = index + 1);
 
         const sourceMap = { "대표": "대표예제", "교재1": "Model examples", "교재2": "Small talk", "교재3": "Further studies" };
@@ -190,30 +194,31 @@
 
         function selectWeek(w) {
             selectedWeek = w;
-            document.getElementById('selected-week-title').innerText = `WEEK ${w}`;
+            document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active-tab'));
+            document.getElementById(`tab-${w}`).classList.add('active-tab');
         }
 
-        // 모바일 오디오 호환성: 첫 터치 시 엔진 깨우기
+        // 모바일 오디오 깨우기: 더 강력한 방식
         function unlockAudio() {
             if ('speechSynthesis' in window) {
-                const msg = new SpeechSynthesisUtterance("Start");
+                const msg = new SpeechSynthesisUtterance("Quiz Start");
                 msg.volume = 0;
+                msg.rate = 10;
                 window.speechSynthesis.speak(msg);
+                window.speechSynthesis.cancel(); // 즉시 취소하여 엔진만 활성화
             }
         }
 
         function startQuiz(mode) {
-            unlockAudio();
-            let weekData = allData.filter(item => item.w === selectedWeek);
-            
-            if (mode === 'mild') {
-                quizPool = weekData.filter(item => item.s === '대표' || item.s === '교재1');
-            } else {
-                quizPool = [...weekData];
-            }
+            unlockAudio(); // 버튼 클릭 시 엔진 잠금 해제
 
-            // 무작위로 10개 추출
-            quizPool = quizPool.sort(() => Math.random() - 0.5).slice(0, 10);
+            let weekData = allData.filter(item => item.w === selectedWeek);
+            let filtered = (mode === 'mild') 
+                ? weekData.filter(item => item.s === '대표' || item.s === '교재1') 
+                : [...weekData];
+
+            // 랜덤 10개 추출
+            quizPool = filtered.sort(() => Math.random() - 0.5).slice(0, 10);
             currentIndex = 0;
             starredIds.clear();
             
@@ -258,10 +263,21 @@
         function playTTS() {
             const text = document.getElementById('q-english').innerText;
             if ('speechSynthesis' in window) {
+                // 이전 대기 음성 모두 제거
                 window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
+
+                // iOS에서 새 인스턴스 생성이 필요할 수 있음
+                const msg = new SpeechSynthesisUtterance();
+                msg.text = text;
                 msg.lang = 'en-US';
-                msg.rate = 0.85;
+                msg.rate = 0.9;
+                
+                // 음성 목록 로딩 (iOS Safari 대응)
+                let voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    msg.voice = voices.find(v => v.lang.includes('en-US')) || voices[0];
+                }
+
                 window.speechSynthesis.speak(msg);
             }
         }
@@ -276,29 +292,29 @@
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             const listEl = document.getElementById('starred-list');
-            listEl.innerHTML = '<p class="text-xs text-slate-400 font-bold uppercase mb-4 tracking-widest text-center">⭐ 다시 볼 문장</p>';
+            listEl.innerHTML = '<p class="text-[10px] text-slate-400 font-black mb-4 uppercase tracking-widest text-center">⭐ 다시 학습할 문장</p>';
             
             const starredItems = quizPool.filter(item => starredIds.has(item.id));
             if (starredItems.length === 0) {
-                listEl.innerHTML += '<p class="text-sm text-slate-400 py-8 text-center">체크한 문장이 없습니다.</p>';
+                listEl.innerHTML += '<p class="text-sm text-slate-400 py-12 text-center font-bold">체크한 문장이 없네요!</p>';
             } else {
                 starredItems.forEach(item => {
                     const div = document.createElement('div');
-                    div.className = "p-5 bg-indigo-50 rounded-2xl border border-indigo-100 mb-3 shadow-sm";
+                    div.className = "p-5 bg-indigo-50 rounded-2xl border border-indigo-100 mb-3";
                     div.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
-                            <span class="text-[9px] bg-indigo-200 text-indigo-700 px-2 py-0.5 rounded font-black">DAY ${item.d}</span>
-                            <span class="text-[9px] text-indigo-400 font-bold uppercase">${sourceMap[item.s]}</span>
+                            <span class="text-[9px] bg-indigo-500 text-white px-1.5 py-0.5 rounded font-black tracking-tighter">DAY ${item.d}</span>
+                            <span class="text-[9px] text-indigo-400 font-bold italic">${sourceMap[item.s]}</span>
                         </div>
-                        <p class="text-xs text-slate-500 mb-1 font-medium">${item.k}</p>
-                        <p class="text-base font-black text-indigo-900">${item.e}</p>
+                        <p class="text-xs text-slate-500 mb-1 leading-relaxed">${item.k}</p>
+                        <p class="text-sm font-black text-indigo-900 leading-snug">${item.e}</p>
                     `;
                     listEl.appendChild(div);
                 });
             }
         }
 
-        // 보안: 우클릭 및 복사 방지
+        // 보안: 우클릭/복사 방지
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.addEventListener('keydown', e => {
             if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's')) e.preventDefault();
