@@ -38,7 +38,7 @@
 
         <div class="flex space-x-2 mb-6 overflow-x-auto pb-2 no-scrollbar font-bold text-sm">
             <button onclick="selectWeek(1)" id="tab-1" class="week-tab flex-shrink-0 px-5 py-2 bg-white rounded-full shadow-sm border border-slate-100 active-tab">Week 1</button>
-            <button class="flex-shrink-0 px-5 py-2 bg-slate-100 text-slate-300 rounded-full shadow-sm border border-slate-100 cursor-not-allowed">Week 2+</button>
+            <button onclick="TRACK.log('week_locked_click', { detail: 'Week2+' })" class="flex-shrink-0 px-5 py-2 bg-slate-100 text-slate-300 rounded-full shadow-sm border border-slate-100 cursor-not-allowed">Week 2+</button>
         </div>
 
         <div id="setup-screen" class="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
@@ -57,7 +57,7 @@
         <div id="quiz-screen" class="hidden">
             <div class="flex justify-between items-center mb-6 px-2">
                 <span id="progress-text" class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-xs font-bold">1 / 10</span>
-                <button onclick="location.reload()" class="text-slate-400 font-bold text-xs uppercase">Exit ✕</button>
+                <button onclick="exitQuiz()" class="text-slate-400 font-bold text-xs uppercase">Exit ✕</button>
             </div>
 
             <div id="card-container" class="card" onclick="flipCard()">
@@ -90,9 +90,99 @@
         <div id="result-screen" class="hidden bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
             <h2 class="text-center font-black text-xl text-slate-800 mb-8 tracking-tighter">퀴즈 완료 리포트</h2>
             <div id="starred-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scroll"></div>
-            <button onclick="location.reload()" class="w-full mt-10 py-5 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition">메인으로 돌아가기</button>
+            <button onclick="goHome()" class="w-full mt-10 py-5 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition">메인으로 돌아가기</button>
         </div>
     </div>
+
+    <script>
+    /* ============================================================
+       [1] 익명 사용 로그 수집 모듈 (TRACK)
+       - 로그인 없이 동작. 개인정보 수집 없음(임의 난수 ID만 사용).
+       - ENDPOINT 에 Google Apps Script 웹앱 URL을 붙여넣으세요.
+         비워두면 콘솔에만 출력되고 아무것도 전송하지 않습니다.
+       ============================================================ */
+    const TRACK = {
+        ENDPOINT: 'https://script.google.com/macros/s/AKfycbyGwi4BYgzjc2-o2m3wNDx_yvrnX7z1HlkemNAATUCVXBYqAh_BPuz94P5lCeg2Kh7zUA/exec',
+        APP_NAME: '기본동사100_스피드퀴즈',
+        buffer: [],
+        sid: '',
+        did: '',
+
+        init() {
+            this.sid = 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+            this.did = this.deviceId();
+            this.log('page_view', { detail: document.referrer || 'direct' });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') this.flush();
+            });
+            window.addEventListener('pagehide', () => this.flush());
+            setInterval(() => this.flush(), 15000);
+        },
+
+        deviceId() {
+            try {
+                let id = localStorage.getItem('sq_did');
+                if (!id) {
+                    id = 'd_' + Math.random().toString(36).slice(2, 10);
+                    localStorage.setItem('sq_did', id);
+                }
+                return id;
+            } catch (e) {
+                return 'd_unknown';
+            }
+        },
+
+        now() {
+            const d = new Date(), p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+        },
+
+        log(name, opt) {
+            opt = opt || {};
+            this.buffer.push({
+                ts: this.now(),
+                name: name,
+                week: opt.week !== undefined ? opt.week : (typeof selectedWeek !== 'undefined' ? selectedWeek : ''),
+                mode: opt.mode !== undefined ? opt.mode : (typeof currentMode !== 'undefined' ? currentMode : ''),
+                day: opt.day !== undefined ? opt.day : '',
+                source: opt.source !== undefined ? opt.source : '',
+                detail: opt.detail !== undefined ? opt.detail : ''
+            });
+            if (this.buffer.length >= 8) this.flush();
+        },
+
+        flush() {
+            if (!this.buffer.length) return;
+            const payload = JSON.stringify({
+                app: this.APP_NAME,
+                sid: this.sid,
+                did: this.did,
+                ua: navigator.userAgent,
+                events: this.buffer
+            });
+            this.buffer = [];
+
+            if (this.ENDPOINT.indexOf('http') !== 0) {
+                console.log('[TRACK 미설정 - 전송 안 함]', payload);
+                return;
+            }
+            try {
+                const blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
+                if (navigator.sendBeacon && navigator.sendBeacon(this.ENDPOINT, blob)) return;
+            } catch (e) { /* fallthrough */ }
+            try {
+                fetch(this.ENDPOINT, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    keepalive: true,
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+                    body: payload
+                }).catch(() => {});
+            } catch (e) { /* 전송 실패는 학습 흐름에 영향 없음 */ }
+        }
+    };
+    TRACK.init();
+    </script>
 
     <script>
         // Week 1 전체 85개 예문 (Day 1 ~ Day 5)
@@ -188,14 +278,17 @@
 
         const sourceMap = { "대표": "대표예제", "교재1": "Model examples", "교재2": "Small talk", "교재3": "Further studies" };
         let selectedWeek = 1;
+        let currentMode = '';
         let quizPool = [];
         let currentIndex = 0;
         let starredIds = new Set();
+        let qStartAt = 0;
 
         function selectWeek(w) {
             selectedWeek = w;
             document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active-tab'));
             document.getElementById(`tab-${w}`).classList.add('active-tab');
+            TRACK.log('week_select', { week: w });
         }
 
         // 모바일 오디오 깨우기: 더 강력한 방식
@@ -211,17 +304,20 @@
 
         function startQuiz(mode) {
             unlockAudio(); // 버튼 클릭 시 엔진 잠금 해제
+            currentMode = mode;
 
             let weekData = allData.filter(item => item.w === selectedWeek);
-            let filtered = (mode === 'mild') 
-                ? weekData.filter(item => item.s === '대표' || item.s === '교재1') 
+            let filtered = (mode === 'mild')
+                ? weekData.filter(item => item.s === '대표' || item.s === '교재1')
                 : [...weekData];
 
             // 랜덤 10개 추출
             quizPool = filtered.sort(() => Math.random() - 0.5).slice(0, 10);
             currentIndex = 0;
             starredIds.clear();
-            
+
+            TRACK.log('quiz_start', { mode: mode, detail: quizPool.length + '문항' });
+
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
             showQuestion();
@@ -231,20 +327,29 @@
             const item = quizPool[currentIndex];
             const card = document.getElementById('card-container');
             const star = document.getElementById('star-btn');
-            
+
             card.classList.remove('flipped');
             star.classList.remove('star-checked');
             document.getElementById('next-btn').classList.add('hidden');
-            
+
             document.getElementById('q-korean').innerText = item.k;
             document.getElementById('q-english').innerText = item.e;
             document.getElementById('q-info').innerText = `Day ${String(item.d).padStart(3, '0')} - ${sourceMap[item.s]}`;
             document.getElementById('progress-text').innerText = `${currentIndex + 1} / ${quizPool.length}`;
+
+            qStartAt = Date.now();
+            TRACK.log('question_view', { day: item.d, source: sourceMap[item.s], detail: (currentIndex + 1) + '번째' });
         }
 
         function flipCard() {
-            document.getElementById('card-container').classList.add('flipped');
+            const card = document.getElementById('card-container');
+            if (card.classList.contains('flipped')) return; // 중복 집계 방지
+            card.classList.add('flipped');
             document.getElementById('next-btn').classList.remove('hidden');
+
+            const item = quizPool[currentIndex];
+            const sec = Math.round((Date.now() - qStartAt) / 1000);
+            TRACK.log('card_flip', { day: item.d, source: sourceMap[item.s], detail: '고민 ' + sec + '초' });
         }
 
         function toggleStar(e) {
@@ -254,13 +359,18 @@
             if (starredIds.has(item.id)) {
                 starredIds.delete(item.id);
                 starBtn.classList.remove('star-checked');
+                TRACK.log('star_off', { day: item.d, source: sourceMap[item.s], detail: item.e });
             } else {
                 starredIds.add(item.id);
                 starBtn.classList.add('star-checked');
+                TRACK.log('star_on', { day: item.d, source: sourceMap[item.s], detail: item.e });
             }
         }
 
         function playTTS() {
+            const item = quizPool[currentIndex];
+            TRACK.log('tts_play', { day: item.d, source: sourceMap[item.s], detail: item.e });
+
             const text = document.getElementById('q-english').innerText;
             if ('speechSynthesis' in window) {
                 // 이전 대기 음성 모두 제거
@@ -271,7 +381,7 @@
                 msg.text = text;
                 msg.lang = 'en-US';
                 msg.rate = 0.9;
-                
+
                 // 음성 목록 로딩 (iOS Safari 대응)
                 let voices = window.speechSynthesis.getVoices();
                 if (voices.length > 0) {
@@ -283,17 +393,33 @@
         }
 
         function nextQuestion() {
+            TRACK.log('next_click', { detail: (currentIndex + 1) + '→' + (currentIndex + 2) });
             currentIndex++;
             if (currentIndex < quizPool.length) showQuestion();
             else showResults();
         }
 
+        function exitQuiz() {
+            TRACK.log('exit_midway', { detail: (currentIndex + 1) + '번째에서 이탈' });
+            TRACK.flush();
+            setTimeout(() => location.reload(), 150);
+        }
+
+        function goHome() {
+            TRACK.log('back_to_home');
+            TRACK.flush();
+            setTimeout(() => location.reload(), 150);
+        }
+
         function showResults() {
+            TRACK.log('quiz_complete', { detail: '별표 ' + starredIds.size + '개' });
+            TRACK.flush();
+
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             const listEl = document.getElementById('starred-list');
             listEl.innerHTML = '<p class="text-[10px] text-slate-400 font-black mb-4 uppercase tracking-widest text-center">⭐ 다시 학습할 문장</p>';
-            
+
             const starredItems = quizPool.filter(item => starredIds.has(item.id));
             if (starredItems.length === 0) {
                 listEl.innerHTML += '<p class="text-sm text-slate-400 py-12 text-center font-bold">체크한 문장이 없네요!</p>';
